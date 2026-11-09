@@ -1,6 +1,10 @@
 package com.photronix.towerdefense;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.Level;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -29,6 +33,8 @@ import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Runs one game of tower defense around the Defense Core.
@@ -50,6 +56,39 @@ public class CoreBlockEntity extends BlockEntity {
     private static final int ARENA_RADIUS = 48;
     private static final int STARTER_COINS = 15;
     private static final double LEAK_DISTANCE = 3.2;
+
+    /** Natural monster spawns are blocked this far (blocks, horizontal) around any Core. */
+    public static final int PEACE_RADIUS = ARENA_RADIUS + 32;
+
+    /** Every loaded Core, so spawn checks are cheap. Cleared when the server stops. */
+    private static final Set<GlobalPos> LOADED_CORES = ConcurrentHashMap.newKeySet();
+
+    public static void forgetAllCores() {
+        LOADED_CORES.clear();
+    }
+
+    /** True if (x, z) in that dimension is inside a Core's no-natural-monsters zone. */
+    public static boolean isNearCore(ResourceKey<Level> dimension, double x, double z) {
+        for (GlobalPos core : LOADED_CORES) {
+            if (core.dimension().equals(dimension)) {
+                double dx = x - core.pos().getX();
+                double dz = z - core.pos().getZ();
+                if (dx * dx + dz * dz <= (double) PEACE_RADIUS * PEACE_RADIUS) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Removes monsters near a Core that aren't wave enemies (leftover natural spawns, e.g. slimes in Superflat). */
+    public static void clearStrayMonsters(ServerLevel level, BlockPos center) {
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, new AABB(center).inflate(PEACE_RADIUS, 64, PEACE_RADIUS),
+                m -> m.getType().getCategory() == MobCategory.MONSTER && !m.getTags().contains(ENEMY_TAG)
+                        && !m.hasCustomName() && !m.isPersistenceRequired())) {
+            mob.discard();
+        }
+    }
 
     private enum Phase { IDLE, COUNTDOWN, WAVE, WON, LOST }
 
@@ -109,7 +148,11 @@ public class CoreBlockEntity extends BlockEntity {
         phase = Phase.COUNTDOWN;
         countdown = FIRST_PREP_TICKS;
         discardEnemies(level);
+        clearStrayMonsters(level, worldPosition);
         giveCoins(level, STARTER_COINS);
+        for (ServerPlayer p : nearbyPlayers(level)) {
+            TowerUnlocks.award(p, 1, false);
+        }
         broadcast(level, "§6§lCore Siege begins!§r §7Defend the Core for " + MAX_WAVES
                 + " waves. Craft towers from coins and place them along the enemy path. First wave in "
                 + FIRST_PREP_TICKS / 20 + "s.");
@@ -222,6 +265,9 @@ public class CoreBlockEntity extends BlockEntity {
     private void waveCleared(ServerLevel level) {
         int bonus = 5 + wave * 2;
         giveCoins(level, bonus);
+        for (ServerPlayer p : nearbyPlayers(level)) {
+            TowerUnlocks.award(p, wave + 1, true); // unlock next wave's towers during prep time
+        }
         if (wave >= MAX_WAVES) {
             giveCoins(level, 50);
             phase = Phase.WON;
@@ -465,7 +511,18 @@ public class CoreBlockEntity extends BlockEntity {
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel serverLevel) {
+            LOADED_CORES.add(GlobalPos.of(serverLevel.dimension(), worldPosition));
+        }
+    }
+
+    @Override
     public void setRemoved() {
+        if (level != null) {
+            LOADED_CORES.remove(GlobalPos.of(level.dimension(), worldPosition));
+        }
         bar.removeAllPlayers();
         super.setRemoved();
     }

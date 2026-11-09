@@ -1,1 +1,7 @@
-{ "variants": { "": { "model": "towerdefense:block/frost_tower" } } }
+{
+  "variants": {
+    "": {
+      "model": "towerdefense:block/frost_tower"
+    }
+  }
+}

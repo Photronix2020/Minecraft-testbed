@@ -1,1 +1,3 @@
-{ "parent": "towerdefense:block/frost_tower" }
+{
+  "parent": "towerdefense:block/frost_tower"
+}

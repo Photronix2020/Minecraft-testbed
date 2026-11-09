@@ -3,7 +3,11 @@
   "values": [
     "towerdefense:defense_core",
     "towerdefense:arrow_tower",
+    "towerdefense:frost_tower",
+    "towerdefense:flame_tower",
     "towerdefense:cannon_tower",
-    "towerdefense:frost_tower"
+    "towerdefense:storm_tower",
+    "towerdefense:sniper_tower",
+    "towerdefense:wither_tower"
   ]
 }

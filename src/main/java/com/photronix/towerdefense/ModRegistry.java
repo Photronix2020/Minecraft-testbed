@@ -16,6 +16,9 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 public final class ModRegistry {
     private ModRegistry() {}
 
@@ -28,30 +31,28 @@ public final class ModRegistry {
     public static final DeferredRegister<CreativeModeTab> TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
 
-    // ---- Blocks ----
+    // ---- Core ----
     public static final RegistryObject<Block> DEFENSE_CORE = BLOCKS.register("defense_core",
             () -> new CoreBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_PURPLE).strength(3.0F, 1200.0F)
                     .sound(SoundType.AMETHYST).lightLevel(state -> 12)));
+    public static final RegistryObject<Item> DEFENSE_CORE_ITEM = blockItem("defense_core", DEFENSE_CORE);
 
-    public static final RegistryObject<Block> ARROW_TOWER = BLOCKS.register("arrow_tower",
-            () -> new TowerBlock(towerProps(MapColor.COLOR_GREEN), TowerStats.ARROW, "Arrow Tower"));
-    public static final RegistryObject<Block> CANNON_TOWER = BLOCKS.register("cannon_tower",
-            () -> new TowerBlock(towerProps(MapColor.COLOR_ORANGE), TowerStats.CANNON, "Cannon Tower"));
-    public static final RegistryObject<Block> FROST_TOWER = BLOCKS.register("frost_tower",
-            () -> new TowerBlock(towerProps(MapColor.ICE), TowerStats.FROST, "Frost Tower"));
+    // ---- Towers (one block + item per TowerType) ----
+    public static final Map<TowerType, RegistryObject<Block>> TOWER_BLOCKS = new EnumMap<>(TowerType.class);
+    public static final Map<TowerType, RegistryObject<Item>> TOWER_ITEMS = new EnumMap<>(TowerType.class);
 
-    private static BlockBehaviour.Properties towerProps(MapColor color) {
-        return BlockBehaviour.Properties.of().mapColor(color).strength(3.0F, 6.0F).sound(SoundType.STONE);
+    static {
+        for (TowerType type : TowerType.values()) {
+            RegistryObject<Block> block = BLOCKS.register(type.id(), () -> new TowerBlock(
+                    BlockBehaviour.Properties.of().mapColor(type.mapColor).strength(3.0F, 6.0F).sound(SoundType.STONE), type));
+            TOWER_BLOCKS.put(type, block);
+            TOWER_ITEMS.put(type, blockItem(type.id(), block));
+        }
     }
 
     // ---- Items ----
-    public static final RegistryObject<Item> COIN = ITEMS.register("coin",
-            () -> new Item(new Item.Properties()));
-    public static final RegistryObject<Item> DEFENSE_CORE_ITEM = blockItem("defense_core", DEFENSE_CORE);
-    public static final RegistryObject<Item> ARROW_TOWER_ITEM = blockItem("arrow_tower", ARROW_TOWER);
-    public static final RegistryObject<Item> CANNON_TOWER_ITEM = blockItem("cannon_tower", CANNON_TOWER);
-    public static final RegistryObject<Item> FROST_TOWER_ITEM = blockItem("frost_tower", FROST_TOWER);
+    public static final RegistryObject<Item> COIN = ITEMS.register("coin", () -> new Item(new Item.Properties()));
 
     private static RegistryObject<Item> blockItem(String name, RegistryObject<Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
@@ -62,18 +63,16 @@ public final class ModRegistry {
             () -> BlockEntityType.Builder.of(CoreBlockEntity::new, DEFENSE_CORE.get()).build(null));
     public static final RegistryObject<BlockEntityType<TowerBlockEntity>> TOWER_BE = BLOCK_ENTITIES.register("tower",
             () -> BlockEntityType.Builder.of(TowerBlockEntity::new,
-                    ARROW_TOWER.get(), CANNON_TOWER.get(), FROST_TOWER.get()).build(null));
+                    TOWER_BLOCKS.values().stream().map(RegistryObject::get).toArray(Block[]::new)).build(null));
 
     // ---- Creative tab ----
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.towerdefense"))
-                    .icon(() -> new ItemStack(ARROW_TOWER_ITEM.get()))
+                    .icon(() -> new ItemStack(TOWER_ITEMS.get(TowerType.ARROW).get()))
                     .displayItems((params, output) -> {
                         output.accept(DEFENSE_CORE_ITEM.get());
-                        output.accept(ARROW_TOWER_ITEM.get());
-                        output.accept(CANNON_TOWER_ITEM.get());
-                        output.accept(FROST_TOWER_ITEM.get());
+                        TOWER_ITEMS.values().forEach(item -> output.accept(item.get()));
                         output.accept(COIN.get());
                     })
                     .build());

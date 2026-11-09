@@ -1,1 +1,7 @@
-{ "variants": { "": { "model": "towerdefense:block/arrow_tower" } } }
+{
+  "variants": {
+    "": {
+      "model": "towerdefense:block/arrow_tower"
+    }
+  }
+}

@@ -1,1 +1,3 @@
-{ "parent": "towerdefense:block/arrow_tower" }
+{
+  "parent": "towerdefense:block/arrow_tower"
+}

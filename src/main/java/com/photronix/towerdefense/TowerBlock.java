@@ -18,13 +18,13 @@ import org.jetbrains.annotations.Nullable;
 
 /** A tower that automatically shoots nearby enemies. Behaviour lives in {@link TowerBlockEntity}. */
 public class TowerBlock extends Block implements EntityBlock {
+    public final TowerType type;
     public final TowerStats stats;
-    private final String displayName;
 
-    public TowerBlock(Properties properties, TowerStats stats, String displayName) {
+    public TowerBlock(Properties properties, TowerType type) {
         super(properties);
-        this.stats = stats;
-        this.displayName = displayName;
+        this.type = type;
+        this.stats = type.stats;
     }
 
     @Nullable
@@ -47,13 +47,9 @@ public class TowerBlock extends Block implements EntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
         if (!level.isClientSide) {
-            String extra = stats.splashRadius() > 0 ? ", splash " + stats.splashRadius() : "";
-            if (stats.slowTicks() > 0) {
-                extra += ", slows";
-            }
-            player.displayClientMessage(Component.literal(displayName + ": range " + (int) stats.range()
-                    + ", damage " + stats.damage() + ", " + String.format("%.1f", 20.0 / stats.cooldownTicks())
-                    + " shots/sec" + extra), true);
+            player.displayClientMessage(Component.literal(type.displayName + " (" + type.blurb + "): range "
+                    + (int) stats.range() + ", damage " + stats.damage() + ", "
+                    + String.format("%.1f", 20.0 / stats.cooldownTicks()) + " shots/sec"), true);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

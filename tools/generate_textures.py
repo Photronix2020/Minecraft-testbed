@@ -84,7 +84,11 @@ def save(img, *path):
     os.makedirs(os.path.dirname(full), exist_ok=True)
     img.save(full)
 
-towers = {"arrow_tower": (70, 200, 70), "cannon_tower": (255, 120, 30), "frost_tower": (110, 200, 255)}
+towers = {
+    "arrow_tower": (70, 200, 70), "frost_tower": (110, 200, 255), "flame_tower": (230, 60, 40),
+    "cannon_tower": (255, 140, 30), "storm_tower": (255, 230, 60), "sniper_tower": (190, 120, 255),
+    "wither_tower": (90, 30, 110),
+}
 for name, accent in towers.items():
     save(brick_side(accent), "block", name + "_side.png")
     save(tower_top(accent), "block", name + "_top.png")

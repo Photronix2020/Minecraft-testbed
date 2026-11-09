@@ -3,10 +3,15 @@ package com.photronix.towerdefense;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -15,6 +20,8 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -47,6 +54,28 @@ public class GameEvents {
         return 1 + roll;
     }
 
+    /** No natural monsters (zombies, slimes, creepers...) near a Core - wave enemies use MobSpawnType.EVENT and are unaffected. */
+    @SubscribeEvent
+    public void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
+        Mob mob = event.getEntity();
+        if (mob.getType().getCategory() != MobCategory.MONSTER || mob.getTags().contains(CoreBlockEntity.ENEMY_TAG)) {
+            return;
+        }
+        MobSpawnType type = event.getSpawnType();
+        if (type != MobSpawnType.NATURAL && type != MobSpawnType.CHUNK_GENERATION
+                && type != MobSpawnType.PATROL && type != MobSpawnType.REINFORCEMENT) {
+            return;
+        }
+        if (CoreBlockEntity.isNearCore(event.getLevel().getLevel().dimension(), event.getX(), event.getZ())) {
+            event.setSpawnCancelled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        CoreBlockEntity.forgetAllCores();
+    }
+
     @SubscribeEvent
     public void onXp(LivingExperienceDropEvent event) {
         if (event.getEntity().getTags().contains(CoreBlockEntity.ENEMY_TAG)) {
@@ -68,18 +97,42 @@ public class GameEvents {
         persisted.putBoolean(KIT_FLAG, true);
         data.put(Player.PERSISTED_NBT_TAG, persisted);
         giveKit(player);
+        TowerUnlocks.awardStarter(player);
         player.sendSystemMessage(Component.literal(
                 "§6§lCore Siege§r\n"
                 + "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start.\n"
                 + "§72. Monsters spawn in a ring around it and walk to the Core. Don't let them touch it!\n"
-                + "§73. Place your §fCrafting Table§7 and craft towers from coins: §fArrow Tower§7 = 3 coins, §fFrost Tower§7 = 5, §fCannon Tower§7 = 7.\n"
+                + "§73. Place your §fCrafting Table§7 and craft towers from coins (open the recipe book!). New towers unlock as you clear waves.\n"
                 + "§74. Place towers along the path. Killing monsters drops more coins.\n"
-                + "§7Lost your kit? Type §f/tdkit§7. The world difficulty must not be Peaceful."));
+                + "§7Natural monsters can't spawn near the Core, so you can build in peace.\n"
+                + "§7Commands: §f/tdarena§7 (build the battleground map), §f/tdkit§7 (new kit), §f/tdrecipes§7 (tower list). The world difficulty must not be Peaceful."));
     }
 
     @SubscribeEvent
     public void onCommands(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+        dispatcher.register(Commands.literal("tdarena")
+                .requires(src -> src.hasPermission(2) || src.getServer().isSingleplayer())
+                .executes(ctx -> {
+                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                    ServerLevel level = player.serverLevel();
+                    BlockPos center = player.blockPosition();
+                    ArenaBuilder.build(level, center, true);
+                    player.teleportTo(level, center.getX() + 0.5, center.getY(), center.getZ() + 3.5, player.getYRot(), 0);
+                    ctx.getSource().sendSuccess(() -> Component.literal("§6Battleground built! §7The Defense Core is in the middle. Right-click it to start. "
+                            + "(§f/tdarena noborder§7 removes the world border.)"), false);
+                    return 1;
+                })
+                .then(Commands.literal("noborder").executes(ctx -> {
+                    ServerLevel level = ctx.getSource().getLevel();
+                    level.getWorldBorder().setSize(5.9999968E7);
+                    ctx.getSource().sendSuccess(() -> Component.literal("§7World border removed."), false);
+                    return 1;
+                })));
+        dispatcher.register(Commands.literal("tdrecipes").executes(ctx -> {
+            TowerUnlocks.sendRecipeList(ctx.getSource().getPlayerOrException());
+            return 1;
+        }));
         dispatcher.register(Commands.literal("tdkit").executes(ctx -> {
             giveKit(ctx.getSource().getPlayerOrException());
             return 1;

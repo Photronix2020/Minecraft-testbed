@@ -51,6 +51,14 @@ public class CoreBlock extends Block implements EntityBlock {
     }
 
     @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
+        super.onPlace(state, level, pos, oldState, moving);
+        if (!state.is(oldState.getBlock()) && level instanceof ServerLevel serverLevel) {
+            CoreBlockEntity.clearStrayMonsters(serverLevel, pos);
+        }
+    }
+
+    @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel
                 && level.getBlockEntity(pos) instanceof CoreBlockEntity core) {
