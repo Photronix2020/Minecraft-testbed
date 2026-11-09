@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    }
+  ],
+  "result": {
+    "item": "towerdefense:frost_tower"
+  }
+}

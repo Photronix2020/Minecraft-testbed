@@ -1,0 +1,8 @@
+{
+  "itemGroup.towerdefense": "Tower Defense",
+  "item.towerdefense.coin": "Coin",
+  "block.towerdefense.defense_core": "Defense Core",
+  "block.towerdefense.arrow_tower": "Arrow Tower",
+  "block.towerdefense.cannon_tower": "Cannon Tower",
+  "block.towerdefense.frost_tower": "Frost Tower"
+}

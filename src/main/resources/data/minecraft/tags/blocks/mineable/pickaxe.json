@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "towerdefense:defense_core",
+    "towerdefense:arrow_tower",
+    "towerdefense:cannon_tower",
+    "towerdefense:frost_tower"
+  ]
+}

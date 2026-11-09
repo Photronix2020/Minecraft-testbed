@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "towerdefense:block/frost_tower_top",
+    "side": "towerdefense:block/frost_tower_side"
+  }
+}
