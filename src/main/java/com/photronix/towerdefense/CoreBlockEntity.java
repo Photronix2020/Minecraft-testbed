@@ -63,7 +63,7 @@ public class CoreBlockEntity extends BlockEntity {
     private int waveTicks = 0;
 
     private int tickCount = 0; // not saved
-    private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Tower Defense"),
+    private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Core Siege"),
             BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
 
     public CoreBlockEntity(BlockPos pos, BlockState state) {
@@ -110,7 +110,7 @@ public class CoreBlockEntity extends BlockEntity {
         countdown = FIRST_PREP_TICKS;
         discardEnemies(level);
         giveCoins(level, STARTER_COINS);
-        broadcast(level, "§6§lTower Defense started!§r §7Defend the Core for " + MAX_WAVES
+        broadcast(level, "§6§lCore Siege begins!§r §7Defend the Core for " + MAX_WAVES
                 + " waves. Craft towers from coins and place them along the enemy path. First wave in "
                 + FIRST_PREP_TICKS / 20 + "s.");
         level.playSound(null, worldPosition, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1F, 1F);

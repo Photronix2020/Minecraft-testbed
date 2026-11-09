@@ -1,6 +1,6 @@
-# Tower Defense (Minecraft Forge 1.20.1)
+# Core Siege (Minecraft Forge 1.20.1)
 
-A self-contained tower defense game for Minecraft Java **1.20.1 / Forge 47+**. Join a world and play, with no setup commands.
+A self-contained tower defense game, Core Siege, for Minecraft Java **1.20.1 / Forge 47+**. Join a world and play, with no setup commands.
 
 ## How to play
 1. Place the **Defense Core** on open, flat ground and **right-click** it. (New players automatically get one, plus 20 coins and a crafting table. `/tdkit` gives the kit again.)
@@ -19,7 +19,7 @@ A self-contained tower defense game for Minecraft Java **1.20.1 / Forge 47+**. J
 World difficulty must not be Peaceful. Works in singleplayer and on servers (everyone near the Core shares the game). Defense Core recipe (if you need another): 8 iron ingots around a diamond.
 
 ## Install
-Drop `dist/towerdefense-1.0.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
+Drop `dist/core-siege-1.0.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
 
 ## Build from source
 Needs JDK 17.

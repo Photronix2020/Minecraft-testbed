@@ -69,7 +69,7 @@ public class GameEvents {
         data.put(Player.PERSISTED_NBT_TAG, persisted);
         giveKit(player);
         player.sendSystemMessage(Component.literal(
-                "§6§lTower Defense§r\n"
+                "§6§lCore Siege§r\n"
                 + "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start.\n"
                 + "§72. Monsters spawn in a ring around it and walk to the Core. Don't let them touch it!\n"
                 + "§73. Place your §fCrafting Table§7 and craft towers from coins: §fArrow Tower§7 = 3 coins, §fFrost Tower§7 = 5, §fCannon Tower§7 = 7.\n"
