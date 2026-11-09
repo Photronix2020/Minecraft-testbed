@@ -47,9 +47,11 @@ public final class TowerUnlocks {
     /** First-join unlocks: the starting towers and the Defense Core recipe. */
     public static void awardStarter(ServerPlayer player) {
         award(player, 1, false);
-        ResourceLocation core = recipeId("defense_core");
-        if (!player.getRecipeBook().contains(core)) {
-            player.server.getRecipeManager().byKey(core).ifPresent(r -> player.awardRecipes(List.of(r)));
+        for (String extra : new String[]{"defense_core", "siege_blaster"}) {
+            ResourceLocation id = recipeId(extra);
+            if (!player.getRecipeBook().contains(id)) {
+                player.server.getRecipeManager().byKey(id).ifPresent(r -> player.awardRecipes(List.of(r)));
+            }
         }
     }
 

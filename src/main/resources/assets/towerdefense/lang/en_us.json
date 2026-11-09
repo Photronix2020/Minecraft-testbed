@@ -8,5 +8,6 @@
   "block.towerdefense.cannon_tower": "Cannon Tower",
   "block.towerdefense.storm_tower": "Storm Tower",
   "block.towerdefense.sniper_tower": "Sniper Tower",
-  "block.towerdefense.wither_tower": "Wither Tower"
+  "block.towerdefense.wither_tower": "Wither Tower",
+  "item.towerdefense.siege_blaster": "Siege Blaster"
 }

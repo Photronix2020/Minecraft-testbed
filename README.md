@@ -18,8 +18,9 @@ A self-contained tower defense game, Core Siege, for Minecraft Java **1.20.1 / F
 | Sniper | 8 coins | wave 8 | huge range, heavy damage |
 | Wither | 9 coins | wave 10 | applies Wither, deadly over time |
 
-5. Place towers along the enemy path. Killing monsters drops coins; clearing a wave gives a bonus.
-6. Every monster that touches the Core damages it (Core health 20; vindicators 2, ravagers 5). Sneak + right-click the Core during prep to start the next wave early.
+5. **Shoot monsters yourself** with the **Siege Blaster** (in your starter kit): right-click to fire an instant beam, 40 blocks range, unlimited ammo, only hurts monsters. Recipe: 2 iron ingots + 4 coins.
+6. Place towers along the enemy path. Killing monsters drops coins; clearing a wave gives a bonus.
+7. Every monster that touches the Core damages it (Core health 20; vindicators 2, ravagers 5). Sneak + right-click the Core during prep to start the next wave early.
 
 While a game runs it is **night** (the clock is restored afterwards) and nearby players get **Night Vision**; both can be switched off in the config. Natural monsters (zombies, slimes, creepers...) can't spawn within ~80 blocks of a Core, and leftover ones are cleared when a Core is placed or a game starts, so the area stays quiet until the waves begin. World difficulty must not be Peaceful. Works in singleplayer and on servers (everyone near the Core shares the game). Defense Core recipe (if you need another): 8 iron ingots around a diamond.
 
@@ -27,7 +28,7 @@ While a game runs it is **night** (the clock is restored afterwards) and nearby 
 `/tdarena` and the automatic arena level everything inside the wall to one height: hills are cut away, and valleys, lakes and caves are filled up to 48 blocks deep so the arena and wall never float. A flat world needs the least work, but it isn't required. If you place a Core by hand on rough ground, enemies spawn on whatever ground they can find near the Core's height and fall back to closer rings, so building on flatter ground still plays best.
 
 ## Install
-Drop `dist/core-siege-1.2.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
+Drop `dist/core-siege-1.3.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
 
 ## Build from source
 Needs JDK 17.

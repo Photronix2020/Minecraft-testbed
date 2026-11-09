@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    },
+    {
+      "item": "towerdefense:coin"
+    }
+  ],
+  "result": {
+    "item": "towerdefense:siege_blaster"
+  }
+}

@@ -49,6 +49,50 @@ public class TowerDefenseTests {
         });
     }
 
+    /** The Siege Blaster hits a monster in the crosshairs, ignores a cow in front of it, and is stopped by walls. */
+    @GameTest(template = "empty", timeoutTicks = 20, batch = "blaster")
+    public static void blasterShoots(GameTestHelper helper) {
+        helper.getLevel().getServer().setDifficulty(Difficulty.NORMAL, true);
+        BlockPos origin = helper.absolutePos(new BlockPos(1, 2, 1));
+        for (int dx = -2; dx <= 30; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                helper.getLevel().setBlock(origin.offset(dx, -1, dz), Blocks.STONE.defaultBlockState(), 2);
+                for (int dy = 0; dy <= 4; dy++) {
+                    helper.getLevel().setBlock(origin.offset(dx, dy, dz), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        net.minecraft.world.entity.LivingEntity shooter = (net.minecraft.world.entity.LivingEntity)
+                EntityType.VILLAGER.spawn(helper.getLevel(), origin, MobSpawnType.COMMAND);
+        ((Mob) shooter).setNoAi(true);
+        net.minecraft.world.entity.LivingEntity cow = (net.minecraft.world.entity.LivingEntity)
+                EntityType.COW.spawn(helper.getLevel(), origin.offset(5, 0, 0), MobSpawnType.COMMAND);
+        ((Mob) cow).setNoAi(true);
+        Mob zombie = (Mob) EntityType.ZOMBIE.spawn(helper.getLevel(), origin.offset(10, 0, 0), MobSpawnType.COMMAND);
+        zombie.setNoAi(true);
+        zombie.getAttribute(Attributes.MAX_HEALTH).setBaseValue(100);
+        zombie.setHealth(100);
+
+        net.minecraft.world.phys.Vec3 eye = net.minecraft.world.phys.Vec3.atCenterOf(origin).add(0, 0.6, 0);
+        net.minecraft.world.phys.Vec3 look = new net.minecraft.world.phys.Vec3(1, 0, 0);
+        var hit = com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, eye, look);
+        helper.assertTrue(hit == zombie, "beam should hit the zombie, not " + hit);
+        helper.assertTrue(zombie.getHealth() <= 100 - com.photronix.towerdefense.BlasterItem.DAMAGE * 0.8F, "zombie should lose health: " + zombie.getHealth());
+        helper.assertTrue(cow.getHealth() == cow.getMaxHealth(), "cow in the line of fire must not be hurt");
+
+        // a wall between shooter and zombie blocks the shot
+        for (int dy = 0; dy <= 3; dy++) {
+            helper.getLevel().setBlock(origin.offset(8, dy, 0), Blocks.STONE.defaultBlockState(), 2);
+            helper.getLevel().setBlock(origin.offset(8, dy, 1), Blocks.STONE.defaultBlockState(), 2);
+            helper.getLevel().setBlock(origin.offset(8, dy, -1), Blocks.STONE.defaultBlockState(), 2);
+        }
+        float before = zombie.getHealth();
+        var blocked = com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, eye, look);
+        helper.assertTrue(blocked == null && zombie.getHealth() == before, "wall should stop the beam");
+        System.out.println("[TDTEST] BLASTER PASS");
+        helper.succeed();
+    }
+
     /** Every tower recipe (and the Core recipe) must be loaded, so the recipe-book unlocks can find them. */
     @GameTest(template = "empty", timeoutTicks = 20, batch = "recipes")
     public static void recipesAreLoaded(GameTestHelper helper) {

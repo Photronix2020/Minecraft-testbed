@@ -106,7 +106,7 @@ public class GameEvents {
                         : "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start (or type §f/tdarena§7 to build a battleground).\n")
                 + "§72. Monsters spawn in a ring around it and walk to the Core. Don't let them touch it!\n"
                 + "§73. Place your §fCrafting Table§7 and craft towers from coins (open the recipe book!). New towers unlock as you clear waves.\n"
-                + "§74. Place towers along the path. Killing monsters drops more coins.\n"
+                + "§74. Place towers along the path, and shoot monsters yourself with the §fSiege Blaster§7 (right-click). Kills drop more coins.\n"
                 + "§7Games run at night with Night Vision, and natural monsters can't spawn near the Core.\n"
                 + "§7Commands: §f/tdarena§7 (build the battleground map), §f/tdkit§7 (new kit), §f/tdrecipes§7 (tower list). The world difficulty must not be Peaceful."));
     }
@@ -165,11 +165,18 @@ public class GameEvents {
         return true;
     }
 
+    private static boolean hasBlaster(ServerPlayer player) {
+        return player.getInventory().contains(new ItemStack(ModRegistry.SIEGE_BLASTER.get()));
+    }
+
     private static void giveKit(ServerPlayer player, boolean includeCore) {
         if (includeCore) {
             ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.DEFENSE_CORE_ITEM.get()));
         }
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.COIN.get(), KIT_COINS));
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(Items.CRAFTING_TABLE));
+        if (!hasBlaster(player)) {
+            ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.SIEGE_BLASTER.get()));
+        }
     }
 }

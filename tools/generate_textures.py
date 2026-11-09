@@ -79,6 +79,21 @@ def coin():
         img.putpixel((x, 5), (176, 118, 20, 255))
     return img
 
+def blaster():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    dark, mid, light = (50, 52, 60, 255), (110, 114, 126, 255), (170, 176, 190, 255)
+    for i in range(10):  # diagonal barrel, bottom-left to top-right
+        x, y = 3 + i, 12 - i
+        img.putpixel((x, y), mid)
+        img.putpixel((x + 1, y), dark)
+        img.putpixel((x, y - 1), light)
+    for x, y in ((4, 12), (4, 13), (5, 13), (3, 13), (4, 14)):  # grip
+        img.putpixel((x, y), (120, 70, 30, 255))
+    for x, y in ((12, 3), (13, 2), (13, 3), (14, 2), (14, 1), (13, 1)):  # glowing tip
+        img.putpixel((x, y), (90, 230, 255, 255))
+    img.putpixel((14, 1), (230, 255, 255, 255))
+    return img
+
 def save(img, *path):
     full = os.path.join(OUT, *path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
@@ -94,4 +109,5 @@ for name, accent in towers.items():
     save(tower_top(accent), "block", name + "_top.png")
 save(core(), "block", "defense_core.png")
 save(coin(), "item", "coin.png")
+save(blaster(), "item", "siege_blaster.png")
 print("textures written to", os.path.normpath(OUT))

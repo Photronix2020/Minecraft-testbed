@@ -53,6 +53,8 @@ public final class ModRegistry {
 
     // ---- Items ----
     public static final RegistryObject<Item> COIN = ITEMS.register("coin", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> SIEGE_BLASTER = ITEMS.register("siege_blaster",
+            () -> new BlasterItem(new Item.Properties().stacksTo(1)));
 
     private static RegistryObject<Item> blockItem(String name, RegistryObject<Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
@@ -73,6 +75,7 @@ public final class ModRegistry {
                     .displayItems((params, output) -> {
                         output.accept(DEFENSE_CORE_ITEM.get());
                         TOWER_ITEMS.values().forEach(item -> output.accept(item.get()));
+                        output.accept(SIEGE_BLASTER.get());
                         output.accept(COIN.get());
                     })
                     .build());
