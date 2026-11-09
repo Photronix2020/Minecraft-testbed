@@ -80,18 +80,26 @@ def coin():
     return img
 
 def blaster():
+    """Siege Rifle: long diagonal barrel, wooden stock, scope on top, glowing muzzle."""
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    dark, mid, light = (50, 52, 60, 255), (110, 114, 126, 255), (170, 176, 190, 255)
-    for i in range(10):  # diagonal barrel, bottom-left to top-right
-        x, y = 3 + i, 12 - i
+    dark, mid, light = (45, 47, 55, 255), (100, 104, 116, 255), (165, 170, 185, 255)
+    wood, wood_d = (140, 85, 40, 255), (95, 55, 25, 255)
+    for i in range(12):  # barrel + receiver along the diagonal
+        x, y = 2 + i, 13 - i
         img.putpixel((x, y), mid)
         img.putpixel((x + 1, y), dark)
-        img.putpixel((x, y - 1), light)
-    for x, y in ((4, 12), (4, 13), (5, 13), (3, 13), (4, 14)):  # grip
-        img.putpixel((x, y), (120, 70, 30, 255))
-    for x, y in ((12, 3), (13, 2), (13, 3), (14, 2), (14, 1), (13, 1)):  # glowing tip
-        img.putpixel((x, y), (90, 230, 255, 255))
-    img.putpixel((14, 1), (230, 255, 255, 255))
+        if y - 1 >= 0:
+            img.putpixel((x, y - 1), light)
+    for x, y in ((1, 14), (2, 14), (1, 15), (2, 15), (3, 14), (2, 13), (3, 15)):  # stock
+        img.putpixel((x, y), wood)
+    for x, y in ((3, 15), (1, 15)):
+        img.putpixel((x, y), wood_d)
+    for x, y in ((5, 11), (6, 11), (7, 10), (6, 10)):  # scope on top of the receiver
+        img.putpixel((x, y), (30, 32, 40, 255))
+    img.putpixel((5, 10), (90, 230, 255, 255))   # lens
+    img.putpixel((7, 9), (90, 230, 255, 255))
+    for x, y in ((14, 2), (14, 1), (15, 1), (15, 2), (13, 1)):  # muzzle glow
+        img.putpixel((x, y), (255, 215, 90, 255))
     return img
 
 def save(img, *path):

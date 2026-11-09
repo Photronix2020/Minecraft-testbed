@@ -44,6 +44,19 @@ public final class TowerUnlocks {
         return newlyUnlocked;
     }
 
+    /** Removes every non-Core-Siege recipe from the player's recipe book (e.g. ones unlocked before this mod's fix). */
+    public static void cleanRecipeBook(ServerPlayer player) {
+        List<Recipe<?>> stray = new ArrayList<>();
+        for (Recipe<?> recipe : player.server.getRecipeManager().getRecipes()) {
+            if (!recipe.getId().getNamespace().equals(TowerDefenseMod.MOD_ID) && player.getRecipeBook().contains(recipe)) {
+                stray.add(recipe);
+            }
+        }
+        if (!stray.isEmpty()) {
+            player.resetRecipes(stray);
+        }
+    }
+
     /** First-join unlocks: the starting towers and the Defense Core recipe. */
     public static void awardStarter(ServerPlayer player) {
         award(player, 1, false);

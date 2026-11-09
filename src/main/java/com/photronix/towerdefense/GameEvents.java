@@ -90,6 +90,9 @@ public class GameEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
+        if (TdConfig.cleanRecipeBook()) {
+            TowerUnlocks.cleanRecipeBook(player);
+        }
         CompoundTag data = player.getPersistentData();
         CompoundTag persisted = data.getCompound(Player.PERSISTED_NBT_TAG);
         if (persisted.getBoolean(KIT_FLAG)) {
@@ -106,7 +109,7 @@ public class GameEvents {
                         : "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start (or type §f/tdarena§7 to build a battleground).\n")
                 + "§72. Monsters spawn in a ring around it and walk to the Core. Don't let them touch it!\n"
                 + "§73. Place your §fCrafting Table§7 and craft towers from coins (open the recipe book!). New towers unlock as you clear waves.\n"
-                + "§74. Place towers along the path, and shoot monsters yourself with the §fSiege Blaster§7 (right-click). Kills drop more coins.\n"
+                + "§74. Place towers along the path, and shoot monsters yourself with the §fSiege Rifle§7 (right-click to fire, hold Sneak to scope). Kills drop more coins.\n"
                 + "§7Games run at night with Night Vision, and natural monsters can't spawn near the Core.\n"
                 + "§7Commands: §f/tdarena§7 (build the battleground map), §f/tdkit§7 (new kit), §f/tdrecipes§7 (tower list). The world difficulty must not be Peaceful."));
     }
