@@ -131,6 +131,23 @@ public class TowerDefenseTests {
         helper.succeed();
     }
 
+    /** Config kit entries: plain item, count, NBT, a gun-style entry, and a missing mod (must be skipped, not crash). */
+    @GameTest(template = "empty", timeoutTicks = 20, batch = "kit")
+    public static void kitEntriesParse(GameTestHelper helper) {
+        var plain = com.photronix.towerdefense.KitItems.parse("minecraft:iron_ingot x5");
+        helper.assertTrue(plain.getItem() == net.minecraft.world.item.Items.IRON_INGOT && plain.getCount() == 5, "count suffix: " + plain);
+        var nbt = com.photronix.towerdefense.KitItems.parse("minecraft:stick{GunId:\"lradd:aug\",GunCurrentAmmoCount:12,HasBulletInBarrel:1b}");
+        helper.assertTrue(!nbt.isEmpty() && nbt.getTag() != null && nbt.getTag().getString("GunId").equals("lradd:aug")
+                && nbt.getTag().getInt("GunCurrentAmmoCount") == 12 && nbt.getTag().getBoolean("HasBulletInBarrel"), "nbt parsed: " + nbt.getTag());
+        var both = com.photronix.towerdefense.KitItems.parse("minecraft:arrow{Foo:1b} x16");
+        helper.assertTrue(both.getCount() == 16 && both.getTag() != null && both.getTag().getBoolean("Foo"), "nbt + count: " + both);
+        var missing = com.photronix.towerdefense.KitItems.parse("tacz:modern_kinetic_gun{GunId:\"lradd:aug\"}");
+        helper.assertTrue(missing.isEmpty(), "an item from an uninstalled mod must be skipped");
+        helper.assertTrue(com.photronix.towerdefense.KitItems.parse("minecraft:stick{broken").isEmpty(), "bad NBT must be skipped");
+        System.out.println("[TDTEST] KIT PASS");
+        helper.succeed();
+    }
+
     /** Every tower recipe (and the Core recipe) must be loaded, so the recipe-book unlocks can find them. */
     @GameTest(template = "empty", timeoutTicks = 20, batch = "recipes")
     public static void recipesAreLoaded(GameTestHelper helper) {

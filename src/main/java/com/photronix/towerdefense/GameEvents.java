@@ -178,8 +178,9 @@ public class GameEvents {
         }
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.COIN.get(), KIT_COINS));
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(Items.CRAFTING_TABLE));
-        if (!hasBlaster(player)) {
+        if (TdConfig.giveRifle() && !hasBlaster(player)) {
             ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.SIEGE_BLASTER.get()));
         }
+        KitItems.giveExtras(player);
     }
 }
