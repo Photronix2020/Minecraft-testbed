@@ -49,6 +49,24 @@ public class TowerDefenseTests {
         });
     }
 
+    /** Every tower recipe (and the Core recipe) must be loaded, so the recipe-book unlocks can find them. */
+    @GameTest(template = "empty", timeoutTicks = 20, batch = "recipes")
+    public static void recipesAreLoaded(GameTestHelper helper) {
+        var manager = helper.getLevel().getServer().getRecipeManager();
+        System.out.println("[TDTEST] total recipes loaded: " + manager.getRecipes().size());
+        for (TowerType type : TowerType.values()) {
+            var id = new net.minecraft.resources.ResourceLocation(TowerDefenseMod.MOD_ID, type.id());
+            var recipe = manager.byKey(id);
+            helper.assertTrue(recipe.isPresent(), "missing recipe " + id);
+            int ingredients = recipe.get().getIngredients().size();
+            System.out.println("[TDTEST] recipe " + id + " ingredients=" + ingredients + " (cost " + type.cost + ")");
+            helper.assertTrue(ingredients == type.cost, id + " recipe has " + ingredients + " coins but TowerType says " + type.cost);
+        }
+        helper.assertTrue(manager.byKey(new net.minecraft.resources.ResourceLocation(TowerDefenseMod.MOD_ID, "defense_core")).isPresent(),
+                "missing defense_core recipe");
+        helper.succeed();
+    }
+
     /** Every tower type must be able to damage an enemy placed 3 blocks away. */
     @GameTest(template = "empty", timeoutTicks = 200, batch = "towers")
     public static void everyTowerFires(GameTestHelper helper) {
