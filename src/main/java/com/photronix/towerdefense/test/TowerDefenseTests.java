@@ -120,6 +120,8 @@ public class TowerDefenseTests {
         int r = com.photronix.towerdefense.ArenaBuilder.RADIUS;
         helper.assertTrue(helper.getLevel().getBlockState(center.offset(25, 3, 25)).is(Blocks.STONE_BRICKS)
                 || helper.getLevel().getBlockState(center.offset(25, 3, 25)).is(Blocks.MOSSY_STONE_BRICKS), "border wall");
+        helper.assertTrue(helper.getLevel().getBlockState(center.offset(9, 3, 2)).is(Blocks.LANTERN), "lamp post along the road");
+        helper.assertTrue(helper.getLevel().getBlockState(center.offset(4, 3, 4)).is(Blocks.LANTERN), "lantern on the spawn pad pillar");
         int buildingBlocks = 0;
         for (int dx = 5; dx <= 11; dx++) {
             for (int dz = 5; dz <= 11; dz++) {
@@ -137,8 +139,12 @@ public class TowerDefenseTests {
                     ModRegistry.TOWER_BLOCKS.get(TowerType.ARROW).get().defaultBlockState(), 3);
         }
         CoreBlockEntity core = (CoreBlockEntity) helper.getLevel().getBlockEntity(center);
+        helper.getLevel().setDayTime(1000); // morning before the game
         core.startGame(helper.getLevel());
         core.skipCountdown(helper.getLevel());
+        long nightTime = helper.getLevel().getDayTime() % 24000;
+        System.out.println("[TDTEST] time of day after start: " + nightTime);
+        helper.assertTrue(nightTime == 18000, "game should switch to midnight, was " + nightTime);
 
         int[] maxEnemies = {0};
         helper.onEachTick(() -> {

@@ -101,6 +101,9 @@ public class CoreBlockEntity extends BlockEntity {
     private int countdown = 0;
     private int waveTicks = 0;
 
+    private boolean nightLocked = false;
+    private long savedDayTime = 0;
+
     private int tickCount = 0; // not saved
     private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Core Siege"),
             BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
@@ -149,6 +152,7 @@ public class CoreBlockEntity extends BlockEntity {
         countdown = FIRST_PREP_TICKS;
         discardEnemies(level);
         clearStrayMonsters(level, worldPosition);
+        beginNight(level);
         giveCoins(level, STARTER_COINS);
         for (ServerPlayer p : nearbyPlayers(level)) {
             TowerUnlocks.award(p, 1, false);
@@ -176,11 +180,15 @@ public class CoreBlockEntity extends BlockEntity {
             if (!bar.getPlayers().isEmpty()) {
                 bar.removeAllPlayers();
             }
+            if (nightLocked) {
+                endNight(level);
+            }
             return;
         }
         tickCount++;
         if (tickCount % 20 == 0) {
             refreshBar(level);
+            keepNight(level);
         }
 
         switch (phase) {
@@ -196,6 +204,7 @@ public class CoreBlockEntity extends BlockEntity {
                 if (--countdown <= 0) {
                     phase = Phase.IDLE;
                     bar.removeAllPlayers();
+                    endNight(level);
                     setChanged();
                 }
             }
@@ -296,6 +305,44 @@ public class CoreBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    // ------------------------------------------------------------------ night mode
+
+    /** Remembers the current time and switches to midnight for the duration of the game. */
+    private void beginNight(ServerLevel level) {
+        if (!TdConfig.nightMode()) {
+            return;
+        }
+        if (!nightLocked) {
+            savedDayTime = level.getDayTime();
+            nightLocked = true;
+        }
+        keepNight(level);
+    }
+
+    /** Called once a second during a game: hold the clock at midnight and refresh Night Vision. */
+    private void keepNight(ServerLevel level) {
+        if (!nightLocked) {
+            return;
+        }
+        level.setDayTime(savedDayTime / 24000L * 24000L + 18000L);
+        for (ServerPlayer p : nearbyPlayers(level)) {
+            p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 20 * 30, 0, false, false, false));
+        }
+    }
+
+    /** Puts the clock back and removes Night Vision. */
+    private void endNight(ServerLevel level) {
+        if (!nightLocked) {
+            return;
+        }
+        nightLocked = false;
+        level.setDayTime(savedDayTime);
+        for (ServerPlayer p : nearbyPlayers(level)) {
+            p.removeEffect(MobEffects.NIGHT_VISION);
+        }
+        setChanged();
+    }
+
     // ------------------------------------------------------------------ enemies
 
     private static int bossCount(int wave) {
@@ -314,10 +361,13 @@ public class CoreBlockEntity extends BlockEntity {
     private void spawnOne(ServerLevel level) {
         RandomSource random = level.random;
         EntityType<?> type = toSpawn <= bossCount(wave) ? EntityType.RAVAGER : pickType(random);
-        for (int attempt = 0; attempt < 16; attempt++) {
+        // try the normal ring first; on rough terrain fall back to closer rings so waves never silently vanish
+        int[] radii = {SPAWN_RADIUS, SPAWN_RADIUS, 14, 8};
+        for (int attempt = 0; attempt < 24; attempt++) {
+            int radius = radii[attempt / 6];
             double angle = random.nextDouble() * Math.PI * 2;
-            int x = worldPosition.getX() + (int) Math.round(Math.cos(angle) * SPAWN_RADIUS);
-            int z = worldPosition.getZ() + (int) Math.round(Math.sin(angle) * SPAWN_RADIUS);
+            int x = worldPosition.getX() + (int) Math.round(Math.cos(angle) * radius);
+            int z = worldPosition.getZ() + (int) Math.round(Math.sin(angle) * radius);
             if (!level.hasChunkAt(new BlockPos(x, worldPosition.getY(), z))) {
                 continue;
             }
@@ -412,6 +462,7 @@ public class CoreBlockEntity extends BlockEntity {
     /** Called when the core block is broken. */
     public void cleanup(ServerLevel level) {
         discardEnemies(level);
+        endNight(level);
         bar.removeAllPlayers();
     }
 
@@ -492,6 +543,8 @@ public class CoreBlockEntity extends BlockEntity {
         tag.putInt("WaveTotal", waveTotal);
         tag.putInt("Countdown", countdown);
         tag.putInt("WaveTicks", waveTicks);
+        tag.putBoolean("NightLocked", nightLocked);
+        tag.putLong("SavedDayTime", savedDayTime);
     }
 
     @Override
@@ -508,6 +561,8 @@ public class CoreBlockEntity extends BlockEntity {
         waveTotal = tag.getInt("WaveTotal");
         countdown = tag.getInt("Countdown");
         waveTicks = tag.getInt("WaveTicks");
+        nightLocked = tag.getBoolean("NightLocked");
+        savedDayTime = tag.getLong("SavedDayTime");
     }
 
     @Override

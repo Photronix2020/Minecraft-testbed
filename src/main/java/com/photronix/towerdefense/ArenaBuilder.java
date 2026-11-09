@@ -3,6 +3,7 @@ package com.photronix.towerdefense;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -51,7 +52,7 @@ public final class ArenaBuilder {
                 set(level, x, floorY, z, grass);
                 set(level, x, floorY - 1, z, dirt);
                 set(level, x, floorY - 2, z, dirt);
-                set(level, x, floorY - 3, z, Blocks.STONE.defaultBlockState());
+                fillDownToSolid(level, x, floorY - 3, z);
                 for (int dy = 0; dy < CLEAR_HEIGHT; dy++) {
                     BlockPos p = new BlockPos(x, floorY + 1 + dy, z);
                     if (!level.getBlockState(p).isAir()) {
@@ -68,6 +69,24 @@ public final class ArenaBuilder {
                 set(level, cx - r, floorY, cz + w, Blocks.DIRT_PATH.defaultBlockState());
                 set(level, cx + w, floorY, cz + r, Blocks.DIRT_PATH.defaultBlockState());
                 set(level, cx + w, floorY, cz - r, Blocks.DIRT_PATH.defaultBlockState());
+            }
+        }
+
+        // 2b. lamp posts along every road (arena games run at night) and on a ring around the middle
+        for (int r : new int[]{9, 15, 21, 27}) {
+            for (int side : new int[]{-2, 2}) {
+                lampPost(level, cx + r, floorY, cz + side);
+                lampPost(level, cx - r, floorY, cz + side);
+                lampPost(level, cx + side, floorY, cz + r);
+                lampPost(level, cx + side, floorY, cz - r);
+            }
+        }
+        for (int k = 0; k < 12; k++) {
+            double angle = Math.toRadians(15 + 30 * k);
+            int dx = (int) Math.round(Math.cos(angle) * 17);
+            int dz = (int) Math.round(Math.sin(angle) * 17);
+            if (Math.abs(dx) > 3 && Math.abs(dz) > 3) {
+                lampPost(level, cx + dx, floorY, cz + dz);
             }
         }
 
@@ -136,6 +155,32 @@ public final class ArenaBuilder {
             WorldBorder border = level.getWorldBorder();
             border.setCenter(cx + 0.5, cz + 0.5);
             border.setSize(2 * RADIUS + 14);
+        }
+    }
+
+    /** A fence post with a lantern on top (4 blocks tall). */
+    private static void lampPost(ServerLevel level, int x, int floorY, int z) {
+        for (int h = 1; h <= 3; h++) {
+            set(level, x, floorY + h, z, Blocks.OAK_FENCE.defaultBlockState());
+        }
+        set(level, x, floorY + 4, z, Blocks.LANTERN.defaultBlockState());
+    }
+
+    /**
+     * Fills from {@code startY} downwards with stone until real ground is reached, so the arena (and the wall
+     * on its edge) never floats over a valley, a lake or a cave. Gives up after 48 blocks.
+     */
+    private static void fillDownToSolid(ServerLevel level, int x, int startY, int z) {
+        int minY = Math.max(level.getMinBuildHeight() + 1, startY - 48);
+        for (int y = startY; y >= minY; y--) {
+            BlockPos p = new BlockPos(x, y, z);
+            BlockState state = level.getBlockState(p);
+            boolean ground = state.blocksMotion() && state.getFluidState().isEmpty()
+                    && !state.is(BlockTags.LEAVES) && !state.is(BlockTags.LOGS);
+            if (ground) {
+                return;
+            }
+            level.setBlock(p, Blocks.STONE.defaultBlockState(), FLAGS);
         }
     }
 

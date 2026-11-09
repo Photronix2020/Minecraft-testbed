@@ -16,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -96,15 +97,17 @@ public class GameEvents {
         }
         persisted.putBoolean(KIT_FLAG, true);
         data.put(Player.PERSISTED_NBT_TAG, persisted);
-        giveKit(player);
+        boolean arena = maybeBuildStartingArena(player);
+        giveKit(player, !arena);
         TowerUnlocks.awardStarter(player);
         player.sendSystemMessage(Component.literal(
                 "§6§lCore Siege§r\n"
-                + "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start.\n"
+                + (arena ? "§71. Your battleground is ready! Right-click the §fDefense Core§7 in the middle to start.\n"
+                        : "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start (or type §f/tdarena§7 to build a battleground).\n")
                 + "§72. Monsters spawn in a ring around it and walk to the Core. Don't let them touch it!\n"
                 + "§73. Place your §fCrafting Table§7 and craft towers from coins (open the recipe book!). New towers unlock as you clear waves.\n"
                 + "§74. Place towers along the path. Killing monsters drops more coins.\n"
-                + "§7Natural monsters can't spawn near the Core, so you can build in peace.\n"
+                + "§7Games run at night with Night Vision, and natural monsters can't spawn near the Core.\n"
                 + "§7Commands: §f/tdarena§7 (build the battleground map), §f/tdkit§7 (new kit), §f/tdrecipes§7 (tower list). The world difficulty must not be Peaceful."));
     }
 
@@ -118,6 +121,7 @@ public class GameEvents {
                     ServerLevel level = player.serverLevel();
                     BlockPos center = player.blockPosition();
                     ArenaBuilder.build(level, center, true);
+                    ArenaState.get(level).markBuilt();
                     player.teleportTo(level, center.getX() + 0.5, center.getY(), center.getZ() + 3.5, player.getYRot(), 0);
                     ctx.getSource().sendSuccess(() -> Component.literal("§6Battleground built! §7The Defense Core is in the middle. Right-click it to start. "
                             + "(§f/tdarena noborder§7 removes the world border.)"), false);
@@ -134,13 +138,37 @@ public class GameEvents {
             return 1;
         }));
         dispatcher.register(Commands.literal("tdkit").executes(ctx -> {
-            giveKit(ctx.getSource().getPlayerOrException());
+            giveKit(ctx.getSource().getPlayerOrException(), true);
             return 1;
         }));
     }
 
-    private static void giveKit(ServerPlayer player) {
-        ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.DEFENSE_CORE_ITEM.get()));
+    /**
+     * In a brand-new world (first minute, overworld, never built before) the battleground is built around
+     * the player automatically. Existing worlds are never touched. Returns true if an arena is being built.
+     */
+    private static boolean maybeBuildStartingArena(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        if (!TdConfig.autoArena() || level.dimension() != Level.OVERWORLD || level.getGameTime() > 20 * 60) {
+            return false;
+        }
+        ArenaState state = ArenaState.get(level);
+        if (state.isBuilt()) {
+            return false;
+        }
+        state.markBuilt();
+        BlockPos center = player.blockPosition();
+        level.getServer().execute(() -> {
+            ArenaBuilder.build(level, center, true);
+            player.teleportTo(level, center.getX() + 0.5, center.getY(), center.getZ() + 3.5, player.getYRot(), 0);
+        });
+        return true;
+    }
+
+    private static void giveKit(ServerPlayer player, boolean includeCore) {
+        if (includeCore) {
+            ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.DEFENSE_CORE_ITEM.get()));
+        }
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.COIN.get(), KIT_COINS));
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(Items.CRAFTING_TABLE));
     }

@@ -3,7 +3,7 @@
 A self-contained tower defense game, Core Siege, for Minecraft Java **1.20.1 / Forge 47+**. Join a world and play, with no setup commands.
 
 ## How to play
-1. **Build the battleground (recommended):** type `/tdarena` while standing on open ground (singleplayer, or ops on a server). It builds a walled arena with a spawn pad and the **Defense Core** in the middle, dirt roads, gatehouses and a few buildings, sets the world spawn there, and adds a world border. `/tdarena noborder` removes the border. You can also skip this and place the Core yourself on open, flat ground.
+1. **The battleground:** in a **brand-new world** it is built for you automatically around where you first spawn (turn this off in `config/towerdefense-common.toml`; existing worlds are never touched). Anywhere else, type `/tdarena` while standing on open ground (singleplayer, or ops on a server). It builds a walled arena with a spawn pad and the **Defense Core** in the middle, dirt roads lit by lamp posts, gatehouses and a few buildings, sets the world spawn there, and adds a world border. `/tdarena noborder` removes the border. You can also skip this and place the Core yourself on open, flat ground.
 2. **Right-click the Core** to start. (New players automatically get a Core, 20 coins and a crafting table. `/tdkit` gives the kit again.)
 3. You get 30 seconds of prep time, then **12 waves** of glowing monsters spawn in a ring ~22 blocks from the Core and walk to it. Boss waves are 6 and 12.
 4. **Craft towers** at a crafting table with coins only (shapeless recipes). Open the **recipe book**: towers you haven't unlocked are hidden, and **new towers unlock as you clear waves** (with the usual "recipe unlocked" toast). `/tdrecipes` lists every tower, its cost and unlock wave.
@@ -21,10 +21,13 @@ A self-contained tower defense game, Core Siege, for Minecraft Java **1.20.1 / F
 5. Place towers along the enemy path. Killing monsters drops coins; clearing a wave gives a bonus.
 6. Every monster that touches the Core damages it (Core health 20; vindicators 2, ravagers 5). Sneak + right-click the Core during prep to start the next wave early.
 
-Natural monsters (zombies, slimes, creepers...) can't spawn within ~80 blocks of a Core, and leftover ones are cleared when a Core is placed or a game starts, so the area stays quiet until the waves begin. World difficulty must not be Peaceful. Works in singleplayer and on servers (everyone near the Core shares the game). Defense Core recipe (if you need another): 8 iron ingots around a diamond.
+While a game runs it is **night** (the clock is restored afterwards) and nearby players get **Night Vision**; both can be switched off in the config. Natural monsters (zombies, slimes, creepers...) can't spawn within ~80 blocks of a Core, and leftover ones are cleared when a Core is placed or a game starts, so the area stays quiet until the waves begin. World difficulty must not be Peaceful. Works in singleplayer and on servers (everyone near the Core shares the game). Defense Core recipe (if you need another): 8 iron ingots around a diamond.
+
+## Uneven or non-flat terrain
+`/tdarena` and the automatic arena level everything inside the wall to one height: hills are cut away, and valleys, lakes and caves are filled up to 48 blocks deep so the arena and wall never float. A flat world needs the least work, but it isn't required. If you place a Core by hand on rough ground, enemies spawn on whatever ground they can find near the Core's height and fall back to closer rings, so building on flatter ground still plays best.
 
 ## Install
-Drop `dist/core-siege-1.1.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
+Drop `dist/core-siege-1.2.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
 
 ## Build from source
 Needs JDK 17.
