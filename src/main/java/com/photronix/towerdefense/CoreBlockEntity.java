@@ -156,7 +156,6 @@ public class CoreBlockEntity extends BlockEntity {
         giveCoins(level, STARTER_COINS);
         for (ServerPlayer p : nearbyPlayers(level)) {
             TowerUnlocks.award(p, 1, false);
-            KitItems.giveResupply(p);
         }
         broadcast(level, "§6§lCore Siege begins!§r §7Defend the Core for " + MAX_WAVES
                 + " waves. Craft towers from coins and place them along the enemy path. First wave in "
@@ -277,7 +276,6 @@ public class CoreBlockEntity extends BlockEntity {
         giveCoins(level, bonus);
         for (ServerPlayer p : nearbyPlayers(level)) {
             TowerUnlocks.award(p, wave + 1, true); // unlock next wave's towers during prep time
-            KitItems.giveResupply(p);
         }
         if (wave >= MAX_WAVES) {
             giveCoins(level, 50);

@@ -49,12 +49,12 @@ public class TowerDefenseTests {
         });
     }
 
-    /** The Siege Rifle: body shot, headshot (double), pierce through a line of monsters, ignores animals, stopped by walls. */
+    /** The Siege Blaster hits a monster in the crosshairs, ignores a cow in front of it, and is stopped by walls. */
     @GameTest(template = "empty", timeoutTicks = 20, batch = "blaster")
-    public static void rifleShoots(GameTestHelper helper) {
+    public static void blasterShoots(GameTestHelper helper) {
         helper.getLevel().getServer().setDifficulty(Difficulty.NORMAL, true);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 2, 1));
-        for (int dx = -2; dx <= 40; dx++) {
+        for (int dx = -2; dx <= 30; dx++) {
             for (int dz = -4; dz <= 4; dz++) {
                 helper.getLevel().setBlock(origin.offset(dx, -1, dz), Blocks.STONE.defaultBlockState(), 2);
                 for (int dy = 0; dy <= 4; dy++) {
@@ -68,44 +68,31 @@ public class TowerDefenseTests {
         net.minecraft.world.entity.LivingEntity cow = (net.minecraft.world.entity.LivingEntity)
                 EntityType.COW.spawn(helper.getLevel(), origin.offset(5, 0, 0), MobSpawnType.COMMAND);
         ((Mob) cow).setNoAi(true);
-        List<Mob> zombies = new ArrayList<>();
-        for (int dx : new int[]{10, 14, 18, 22}) { // four in a line; the rifle pierces only 3
-            Mob z = (Mob) EntityType.ZOMBIE.spawn(helper.getLevel(), origin.offset(dx, 0, 0), MobSpawnType.COMMAND);
-            z.setNoAi(true);
-            z.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
-            z.setHealth(1000);
-            zombies.add(z);
+        Mob zombie = (Mob) EntityType.ZOMBIE.spawn(helper.getLevel(), origin.offset(10, 0, 0), MobSpawnType.COMMAND);
+        zombie.setNoAi(true);
+        ((net.minecraft.world.entity.monster.Zombie) zombie).setBaby(false);
+        for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            zombie.setItemSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);
         }
-        var look = new net.minecraft.world.phys.Vec3(1, 0, 0);
-        var chest = net.minecraft.world.phys.Vec3.atCenterOf(origin).add(0, 0.6, 0); // chest height
-        var head = net.minecraft.world.phys.Vec3.atCenterOf(origin).add(0, 1.25, 0); // head height
+        zombie.getAttribute(Attributes.MAX_HEALTH).setBaseValue(100);
+        zombie.setHealth(100);
 
-        // 1. body shot pierces three zombies with falloff, skips the cow, misses the fourth
-        var hits = com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, chest, look);
-        helper.assertTrue(hits.size() == 3, "rifle should pierce exactly 3 monsters, hit " + hits.size());
-        float d0 = 1000 - zombies.get(0).getHealth(), d1 = 1000 - zombies.get(1).getHealth(), d2 = 1000 - zombies.get(2).getHealth();
-        System.out.println("[TDTEST] rifle body damage " + d0 + " / " + d1 + " / " + d2);
-        helper.assertTrue(d0 > 12 && d0 <= 14 && d1 > d2 && d1 < d0 && d2 > 0, "damage should fall off along the line");
-        helper.assertTrue(zombies.get(3).getHealth() == 1000, "4th zombie is beyond the pierce limit");
+        net.minecraft.world.phys.Vec3 eye = net.minecraft.world.phys.Vec3.atCenterOf(origin).add(0, 0.6, 0);
+        net.minecraft.world.phys.Vec3 look = new net.minecraft.world.phys.Vec3(1, 0, 0);
+        var hit = com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, eye, look);
+        helper.assertTrue(hit == zombie, "beam should hit the zombie, not " + hit);
+        helper.assertTrue(zombie.getHealth() <= 100 - com.photronix.towerdefense.BlasterItem.DAMAGE * 0.8F, "zombie should lose health: " + zombie.getHealth());
         helper.assertTrue(cow.getHealth() == cow.getMaxHealth(), "cow in the line of fire must not be hurt");
 
-        // 2. headshot does double damage to the first zombie
-        float before = zombies.get(0).getHealth();
-        com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, head, look);
-        float headDamage = before - zombies.get(0).getHealth();
-        System.out.println("[TDTEST] rifle head damage " + headDamage);
-        helper.assertTrue(headDamage > 25, "headshot should do ~double damage, did " + headDamage);
-
-        // 3. a wall blocks the shot
         for (int dy = 0; dy <= 3; dy++) {
             for (int dz = -1; dz <= 1; dz++) {
                 helper.getLevel().setBlock(origin.offset(8, dy, dz), Blocks.STONE.defaultBlockState(), 2);
             }
         }
-        float beforeWall = zombies.get(0).getHealth();
-        var blocked = com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, chest, look);
-        helper.assertTrue(blocked.isEmpty() && zombies.get(0).getHealth() == beforeWall, "wall should stop the bullet");
-        System.out.println("[TDTEST] RIFLE PASS");
+        float before = zombie.getHealth();
+        var blocked = com.photronix.towerdefense.BlasterItem.fire(helper.getLevel(), shooter, eye, look);
+        helper.assertTrue(blocked == null && zombie.getHealth() == before, "wall should stop the beam");
+        System.out.println("[TDTEST] BLASTER PASS");
         helper.succeed();
     }
 
@@ -128,23 +115,6 @@ public class TowerDefenseTests {
         System.out.println("[TDTEST] vanilla recipe advancements checked=" + checked + " stillRewarding=" + stillRewarding);
         helper.assertTrue(checked > 100, "expected the vanilla recipe advancements to exist, found " + checked);
         helper.assertTrue(stillRewarding == 0, stillRewarding + " vanilla advancements still unlock recipes");
-        helper.succeed();
-    }
-
-    /** Config kit entries: plain item, count, NBT, a gun-style entry, and a missing mod (must be skipped, not crash). */
-    @GameTest(template = "empty", timeoutTicks = 20, batch = "kit")
-    public static void kitEntriesParse(GameTestHelper helper) {
-        var plain = com.photronix.towerdefense.KitItems.parse("minecraft:iron_ingot x5");
-        helper.assertTrue(plain.getItem() == net.minecraft.world.item.Items.IRON_INGOT && plain.getCount() == 5, "count suffix: " + plain);
-        var nbt = com.photronix.towerdefense.KitItems.parse("minecraft:stick{GunId:\"lradd:aug\",GunCurrentAmmoCount:12,HasBulletInBarrel:1b}");
-        helper.assertTrue(!nbt.isEmpty() && nbt.getTag() != null && nbt.getTag().getString("GunId").equals("lradd:aug")
-                && nbt.getTag().getInt("GunCurrentAmmoCount") == 12 && nbt.getTag().getBoolean("HasBulletInBarrel"), "nbt parsed: " + nbt.getTag());
-        var both = com.photronix.towerdefense.KitItems.parse("minecraft:arrow{Foo:1b} x16");
-        helper.assertTrue(both.getCount() == 16 && both.getTag() != null && both.getTag().getBoolean("Foo"), "nbt + count: " + both);
-        var missing = com.photronix.towerdefense.KitItems.parse("tacz:modern_kinetic_gun{GunId:\"lradd:aug\"}");
-        helper.assertTrue(missing.isEmpty(), "an item from an uninstalled mod must be skipped");
-        helper.assertTrue(com.photronix.towerdefense.KitItems.parse("minecraft:stick{broken").isEmpty(), "bad NBT must be skipped");
-        System.out.println("[TDTEST] KIT PASS");
         helper.succeed();
     }
 
