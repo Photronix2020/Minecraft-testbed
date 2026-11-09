@@ -14,3 +14,7 @@ giveSiegeRifleInKit = true
 #Tip: hold the item in-game and run /data get entity @s SelectedItem to see its id and NBT.
 #Example: ['tacz:modern_kinetic_gun{GunId:"modpack:gun_id",GunFireMode:"AUTO",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}']
 extraKitItems = ['tacz:modern_kinetic_gun{GunId:"lradd:aug",GunFireMode:"Auto",GunCurrentAmmoCount:12,HasBulletInBarrel:1b}']
+#Items every nearby player receives at the start of a game and each time a wave is cleared (e.g. ammo for a gun mod).
+#Same format as extraKitItems. Entries for mods that aren't installed are skipped.
+#Example: ['tacz:ammo{AmmoId:"pack:ammo_id"} x64']
+resupplyEachWave = []

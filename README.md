@@ -29,6 +29,8 @@ Core Siege works alongside other weapon mods: wave enemies drop coins whoever ki
 - `giveSiegeRifleInKit = false` leaves the Siege Rifle out of the starter kit.
 - `extraKitItems` adds items to the kit (new players and `/tdkit`), in `modid:item{nbt} xCOUNT` form. Entries for mods that aren't installed are skipped. To get an item's exact id and NBT, hold it and run `/data get entity @s SelectedItem`. TaCZ gun example (the gun id comes from whichever gun pack you use): `'tacz:modern_kinetic_gun{GunId:"pack:gun_id",GunFireMode:"AUTO",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}'`
 
+- `resupplyEachWave` gives every nearby player a list of items (same format) at the start of a game and each time a wave is cleared, e.g. a stack of ammo, so a gun never runs dry between waves.
+
 ## Recipe book
 Only Core Siege recipes (towers, Defense Core, Siege Rifle) appear in the recipe book. The mod replaces Minecraft's automatic recipe-unlock advancements (`data/minecraft/advancements/recipes/**`) with inert versions, and removes vanilla recipes from a player's book at login (`cleanRecipeBookAtLogin` in the config). Vanilla recipes can still be crafted by hand. Delete the advancements folder from the jar's source to restore normal unlocking.
 
@@ -36,7 +38,7 @@ Only Core Siege recipes (towers, Defense Core, Siege Rifle) appear in the recipe
 `/tdarena` and the automatic arena level everything inside the wall to one height: hills are cut away, and valleys, lakes and caves are filled up to 48 blocks deep so the arena and wall never float. A flat world needs the least work, but it isn't required. If you place a Core by hand on rough ground, enemies spawn on whatever ground they can find near the Core's height and fall back to closer rings, so building on flatter ground still plays best.
 
 ## Install
-Drop `dist/core-siege-1.5.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
+Drop `dist/core-siege-1.6.0.jar` into the `mods` folder of a Minecraft 1.20.1 Forge profile.
 
 ## Build from source
 Needs JDK 17.

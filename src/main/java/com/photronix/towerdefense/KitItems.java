@@ -61,6 +61,16 @@ public final class KitItems {
         return stack;
     }
 
+    /** Gives the player every usable item from the per-wave resupply config list (e.g. ammo). */
+    public static void giveResupply(ServerPlayer player) {
+        for (String entry : TdConfig.resupplyItems()) {
+            ItemStack stack = parse(entry);
+            if (!stack.isEmpty()) {
+                ItemHandlerHelper.giveItemToPlayer(player, stack);
+            }
+        }
+    }
+
     /** Gives the player every usable configured extra item. */
     public static void giveExtras(ServerPlayer player) {
         for (String entry : TdConfig.extraKitItems()) {
