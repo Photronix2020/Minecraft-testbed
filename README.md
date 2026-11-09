@@ -3,7 +3,7 @@
 A self-contained tower defense game for Minecraft Java **1.20.1 / Forge 47+**. Join a world and play, with no setup commands.
 
 ## How to play
-1. Place the **Defense Core** on open, flat ground and **right-click** it. (New players get one automatically, plus 20 coins. `/tdkit` gives the kit again.)
+1. Place the **Defense Core** on open, flat ground and **right-click** it. (New players automatically get one, plus 20 coins and a crafting table. `/tdkit` gives the kit again.)
 2. You get 30 seconds of prep time, then **12 waves** of glowing monsters spawn in a ring ~22 blocks out and walk to the Core. Boss waves are 6 and 12.
 3. Craft towers at a crafting table (shapeless, coins only):
 

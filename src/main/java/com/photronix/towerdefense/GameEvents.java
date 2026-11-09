@@ -11,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
@@ -71,7 +72,7 @@ public class GameEvents {
                 "§6§lTower Defense§r\n"
                 + "§71. Place the §fDefense Core§7 on open, flat ground and right-click it to start.\n"
                 + "§72. Monsters spawn in a ring around it and walk to the Core. Don't let them touch it!\n"
-                + "§73. Craft towers from coins: §fArrow Tower§7 = 3 coins, §fFrost Tower§7 = 5, §fCannon Tower§7 = 7.\n"
+                + "§73. Place your §fCrafting Table§7 and craft towers from coins: §fArrow Tower§7 = 3 coins, §fFrost Tower§7 = 5, §fCannon Tower§7 = 7.\n"
                 + "§74. Place towers along the path. Killing monsters drops more coins.\n"
                 + "§7Lost your kit? Type §f/tdkit§7. The world difficulty must not be Peaceful."));
     }
@@ -88,5 +89,6 @@ public class GameEvents {
     private static void giveKit(ServerPlayer player) {
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.DEFENSE_CORE_ITEM.get()));
         ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ModRegistry.COIN.get(), KIT_COINS));
+        ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(Items.CRAFTING_TABLE));
     }
 }
