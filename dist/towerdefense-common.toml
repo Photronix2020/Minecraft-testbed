@@ -1,0 +1,16 @@
+#Build the Core Siege battleground automatically where a player first joins a brand-new world.
+#Existing worlds are never touched; use /tdarena there.
+autoBuildArenaInNewWorlds = true
+#Make it night and give nearby players Night Vision while a game is running.
+#Time is restored when the game ends.
+nightDuringGames = true
+#Remove vanilla recipes from a player's recipe book at login so only Core Siege recipes show.
+#(Vanilla recipes can still be crafted by hand. The mod also stops vanilla from auto-unlocking recipes.)
+cleanRecipeBookAtLogin = true
+#Include the Siege Rifle in the starter kit. Turn off if another gun mod supplies the weapons.
+giveSiegeRifleInKit = true
+#Extra items for the starter kit (new players and /tdkit), e.g. a gun from another mod.
+#Format: modid:item{nbt} xCOUNT  (NBT and count are optional). Entries for mods that aren't installed are skipped.
+#Tip: hold the item in-game and run /data get entity @s SelectedItem to see its id and NBT.
+#Example: ['tacz:modern_kinetic_gun{GunId:"modpack:gun_id",GunFireMode:"AUTO",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}']
+extraKitItems = ['tacz:modern_kinetic_gun{GunId:"lradd:aug",GunFireMode:"Auto",GunCurrentAmmoCount:12,HasBulletInBarrel:1b}']
